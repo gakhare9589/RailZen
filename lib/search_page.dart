@@ -1,7 +1,44 @@
 import 'package:flutter/material.dart';
+import 'services/train_search_service.dart';
 
-class SearchPage extends StatelessWidget {
+class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
+
+  @override
+  State<SearchPage> createState() => _SearchPageState();
+}
+
+class _SearchPageState extends State<SearchPage> {
+  final TextEditingController trainController = TextEditingController();
+  final TrainSearchService trainService = TrainSearchService();
+
+  Map<String, dynamic>? trainData;
+  bool isLoading = false;
+
+  Future<void> searchTrain() async {
+    if (trainController.text.trim().isEmpty) return;
+
+    setState(() => isLoading = true);
+
+    try {
+      final data = await trainService.searchTrain(
+        trainController.text.trim(),
+      );
+
+      setState(() {
+        trainData = data;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,108 +50,87 @@ class SearchPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               const Text(
-                "SEARCH",
+                "SEARCH TRAIN",
                 style: TextStyle(
                   color: Colors.white70,
                   fontSize: 14,
-                  letterSpacing: 1.5,
-                  fontWeight: FontWeight.w600,
+                  letterSpacing: 2,
                 ),
               ),
-
               const SizedBox(height: 8),
-
               const Text(
-                "FIND YOUR\nTRAIN",
+                "TRAIN\nSEARCH",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 34,
-                  height: 1.05,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-
-              const SizedBox(height: 25),
-
-              _buildField(
-                "From Station",
-                Icons.train,
+              const SizedBox(height: 24),
+              TextField(
+                controller: trainController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: "Enter Train Number or Name",
+                  hintStyle: const TextStyle(color: Colors.white54),
+                  prefixIcon: const Icon(Icons.train,
+                      color: Color(0xFF8B5CF6)),
+                  filled: true,
+                  fillColor: const Color(0xFF17171C),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
               ),
-
-              const SizedBox(height: 15),
-
-              _buildField(
-                "To Station",
-                Icons.location_on,
-              ),
-
-              const SizedBox(height: 15),
-
-              _buildField(
-                "Journey Date",
-                Icons.calendar_month,
-              ),
-
-              const SizedBox(height: 22),
-
+              const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
-                height: 58,
+                height: 55,
                 child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF8B5CF6),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                  ),
-                  child: const Text(
-                    "SEARCH TRAINS",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
+                  onPressed: searchTrain,
+                  child: const Text("SEARCH"),
                 ),
               ),
+              const SizedBox(height: 20),
+              if (isLoading)
+                const Center(child: CircularProgressIndicator()),
+              if (trainData != null)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF17171C),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Builder(
+                    builder: (context) {
+                      final train = trainData!['body'][0]['trains'][0];
 
-              const SizedBox(height: 30),
-
-              const Text(
-                "POPULAR TRAINS",
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 13,
-                  letterSpacing: 1,
-                  fontWeight: FontWeight.w600,
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            train['trainName'] ?? '',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          infoTile("🚆 Train No", train['trainNumber'] ?? ""),
+                          infoTile("📍 Origin", train['origin'] ?? ""),
+                          infoTile("🏁 Destination", train['destination'] ?? ""),
+                          infoTile("🚉 From", train['stationFrom'] ?? ""),
+                          infoTile("🚉 To", train['stationTo'] ?? ""),
+                          infoTile("📅 Running", train['runningOn'] ?? ""),
+                        ],
+                      );
+                    },
+                  ),
                 ),
-              ),
-
-              const SizedBox(height: 15),
-
-              trainCard(
-                "Rajdhani Express",
-                "12951",
-                "16:35",
-                "08:30",
-              ),
-
-              trainCard(
-                "Vande Bharat Express",
-                "20171",
-                "06:00",
-                "13:45",
-              ),
-
-              trainCard(
-                "Duronto Express",
-                "12263",
-                "23:15",
-                "15:20",
-              ),
             ],
           ),
         ),
@@ -122,108 +138,34 @@ class SearchPage extends StatelessWidget {
     );
   }
 
-  static Widget _buildField(
-      String hint,
-      IconData icon,
-      ) {
-    return TextField(
-      style: const TextStyle(
-        color: Colors.white,
-      ),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(
-          color: Colors.white54,
+  Widget infoTile(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: const Color(0xFF24242C),
+          borderRadius: BorderRadius.circular(16),
         ),
-        prefixIcon: Icon(
-          icon,
-          color: const Color(0xFF8B5CF6),
-        ),
-        filled: true,
-        fillColor: const Color(0xFF17171C),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide.none,
-        ),
-      ),
-    );
-  }
-
-  Widget trainCard(
-      String name,
-      String number,
-      String departure,
-      String arrival,
-      ) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: const Color(0xFF17171C),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Colors.white10,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            height: 52,
-            width: 52,
-            decoration: BoxDecoration(
-              color: const Color(0xFF8B5CF6)
-                  .withOpacity(.15),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: const Icon(
-              Icons.train,
-              color: Color(0xFF8B5CF6),
-            ),
-          ),
-
-          const SizedBox(width: 15),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment:
-              CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                Text(
-                  "$number • $departure → $arrival",
-                  style: const TextStyle(
-                    color: Colors.white60,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor:
-              const Color(0xFF8B5CF6),
-            ),
-            child: const Text(
-              "Book",
-              style: TextStyle(
-                color: Colors.white,
+        child: Row(
+          children: [
+            Text(
+              "$title : ",
+              style: const TextStyle(
+                color: Colors.white70,
+                fontWeight: FontWeight.bold,
               ),
             ),
-          ),
-        ],
+            Expanded(
+              child: Text(
+                value,
+                style: const TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
