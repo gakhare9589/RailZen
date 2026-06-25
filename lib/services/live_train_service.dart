@@ -25,7 +25,7 @@ class LiveTrainService {
         'x-rapidapi-host':
         'indian-railway-irctc.p.rapidapi.com',
         'x-rapidapi-key':
-        'YOUR_RAPIDAPI_KEY',
+        '4db579ae88msh6530f6300f8760fp16fbe8jsn29a056e248fa',
         'Content-Type': 'application/json',
         'x-rapidapi': 'rapid-api-database',
       },
