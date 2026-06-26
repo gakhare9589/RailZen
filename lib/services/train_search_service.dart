@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class TrainSearchService {
-  static const String _apiKey = 'YOUR_NEW_RAPIDAPI_KEY';
+  static const String _apiKey = '4db579ae88msh6530f6300f8760fp16fbe8jsn29a056e248fa';
 
   Future<Map<String, dynamic>> searchTrain(String train) async {
     final url = Uri.parse(

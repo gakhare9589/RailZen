@@ -1,3 +1,4 @@
+import 'widgets/route_timeline.dart';
 import 'package:flutter/material.dart';
 import 'services/live_train_service.dart';
 
@@ -197,25 +198,8 @@ class _LiveTrainPageState extends State<LiveTrainPage> {
                       const SizedBox(height: 12),
 
                       if (stations != null)
-                        ...stations.take(5).map(
-                              (station) => Card(
-                            color: const Color(0xFF1E293B),
-                            margin: const EdgeInsets.only(bottom: 10),
-                            child: ListTile(
-                              leading: const Icon(
-                                Icons.location_on,
-                                color: Color(0xFF8B5CF6),
-                              ),
-                              title: Text(
-                                station['stationName'] ?? '',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                              subtitle: Text(
-                                "Arrival: ${station['arrivalTime']}   Departure: ${station['departureTime']}",
-                                style: const TextStyle(color: Colors.white70),
-                              ),
-                            ),
-                          ),
+                        RouteTimeline(
+                          stations: stations,
                         ),
                     ],
                   ),
