@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'home_page.dart';
+import 'screens/home/home_page.dart';
 import 'search_page.dart';
 import 'tickets_page.dart';
 import 'live_train_page.dart';
@@ -75,9 +75,9 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     final pages = [
       const HomePage(),
-      const SearchPage(),
-      const TicketsPage(),
-      const LiveTrainPage(),
+      SearchPage(),
+      TicketsPage(),
+      LiveTrainPage(),
       ProfilePage(
         isDarkMode: widget.isDarkMode,
         onThemeChanged: widget.onThemeChanged,
