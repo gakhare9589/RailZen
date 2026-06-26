@@ -42,6 +42,7 @@ class _LiveTrainPageState extends State<LiveTrainPage> {
   @override
   Widget build(BuildContext context) {
     final body = trainData?['body'];
+    final stations = body?['stations'] as List?;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
@@ -182,6 +183,40 @@ class _LiveTrainPageState extends State<LiveTrainPage> {
                           color: Colors.white,
                         ),
                       ),
+                      const SizedBox(height: 24),
+
+                      const Text(
+                        "🚉 Route",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      if (stations != null)
+                        ...stations.take(5).map(
+                              (station) => Card(
+                            color: const Color(0xFF1E293B),
+                            margin: const EdgeInsets.only(bottom: 10),
+                            child: ListTile(
+                              leading: const Icon(
+                                Icons.location_on,
+                                color: Color(0xFF8B5CF6),
+                              ),
+                              title: Text(
+                                station['stationName'] ?? '',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              subtitle: Text(
+                                "Arrival: ${station['arrivalTime']}   Departure: ${station['departureTime']}",
+                                style: const TextStyle(color: Colors.white70),
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
